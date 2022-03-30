@@ -17,16 +17,16 @@ void x_estimate_m(int i, double a, double b);
 void table_receive(int i, double a, double b);
 
 double **s;
-int srow = 256;  // Na / 4 transmitt how many symbols (transmitter)
+int srow = 1844;  // Na / 4 transmitt how many symbols (transmitter)
 int scolumn = 2; //1 symbol vector have 2 index
 
 double **m_estimate;
-int mrow = 256;  // Na / 4 transmitt estimate symbols (receiver+estimate)
+int mrow = 1844;  // Na / 4 transmitt estimate symbols (receiver+estimate)
 int mcolumn = 2; //1 symbol vector have 2 index
 
 int **receive_sym;
 
-int receivesymrow = 256; // Na/4 transmitt how many symbols
+int receivesymrow = 1844; // Na/4 transmitt how many symbols
 int receivesymcolumn = 4; //16QAM PRESENT 1symbol = 4bits
 
 int main() {
@@ -65,7 +65,7 @@ int main() {
     int **G;
     int Glenrow = krc;
     int Glencolumn = n;
-    
+
     int *u;
     int ulen = krc;
     int temp;     // for changing the order od M and L
@@ -81,40 +81,87 @@ int main() {
     fscanf(fpr,"%d",&n);
     fscanf(fpr,"%d",&rc);
     printf("column = %d; row = %d\n", n, rc);
-    fscanf(fpr,"%d",&dv);
-    fscanf(fpr,"%d",&dc);
-    printf("dv = %d; dc = %d\n", dv, dc);
+    fscanf(fpr,"%d",&dc1);
+    fscanf(fpr,"%d",&dc2);
+    fscanf(fpr,"%d",&dv1);
+    fscanf(fpr,"%d",&dv2);
+    
+    
 
-    Llenrow = rc;
-    Llencolumn = dc;
-    Mlenrow = n; 
-    Mlencolumn = dv;
-    M = (int **)malloc(Mlenrow * sizeof(int *));
-    for (i = 0; i < Mlenrow; i++) M[i] = (int *)malloc(Mlencolumn * sizeof(int));
-    L = (int **)malloc(Llenrow * sizeof(int *));
-    for (i = 0; i < Llenrow; i++) L[i] = (int *)malloc(Llencolumn * sizeof(int));
-    for (j = 0; j < Mlenrow; j++) 
-        for (i = 0; i < Mlencolumn; i++) fscanf(fpr,"%d",&M[j][i]);
-    for (j = 0; j < n; j++)                 // FOR ORDERING 
-        for (i = 0; i < dv; i++) 
-            for (m = i; m < dv; m++) 
-                if (M[j][m] < M[j][i]) {
-                    temp = M[j][m];
-                    M[j][m] = M[j][i];
-                    M[j][i] = temp;
+    L1lenrow = rc/2;
+    L1lencolumn = dc1;
+    L2lenrow = rc/2;
+    L2lencolumn = dc2;
+
+    M1lenrow = n/2; 
+    M1lencolumn = dv1;
+    M2lenrow = n/2; 
+    M2lencolumn = dv2;
+
+    M1 = (int **)malloc(M1lenrow * sizeof(int *));
+    for (i = 0; i < M1lenrow; i++) M1[i] = (int *)malloc(M1lencolumn * sizeof(int));
+    M2 = (int **)malloc(M1lenrow * sizeof(int *));
+    for (i = 0; i < M2lenrow; i++) M2[i] = (int *)malloc(M2lencolumn * sizeof(int));
+    L1 = (int **)malloc(L1lenrow * sizeof(int *));
+    for (i = 0; i < L1lenrow; i++) L1[i] = (int *)malloc(L1lencolumn * sizeof(int));
+    L2 = (int **)malloc(L2lenrow * sizeof(int *));
+    for (i = 0; i < L2lenrow; i++) L2[i] = (int *)malloc(L2lencolumn * sizeof(int));
+    printf("y\n");
+printf("column = %d; row = %d\n", n, rc);
+    for (j = 0; j < M1lenrow; j++) 
+        for (i = 0; i < M1lencolumn; i++) 
+            fscanf(fpr,"%d",&M1[j][i]);
+
+    for (j = 0; j < M2lenrow; j++) 
+        for (i = 0; i < M2lencolumn; i++) 
+            fscanf(fpr,"%d",&M2[j][i]);
+
+    for (j = 0; j < M1lenrow; j++)     // FOR ORDERING 
+        for (i = 0; i < M1lencolumn; i++) 
+            for (m = i; m < M1lencolumn; m++) 
+                if (M1[j][m] < M1[j][i]) {
+                    temp = M1[j][m];
+                    M1[j][m] = M1[j][i];
+                    M1[j][i] = temp;
                 }
-    for (i = 0; i < Llenrow; i++) 
-        for (j = 0; j < dc; j++) fscanf(fpr,"%d",&L[i][j]);
-    for (i = 0; i < rc; i++)                // FOR ORDERING 
-        for (j = 0; j < dc; j++) 
-            for (m = j; m < dc; m++) 
-                if (L[i][m] < L[i][j]) {
-                    temp = L[i][m];
-                    L[i][m] =L[i][j];
-                    L[i][j] = temp;
+    for (j = 0; j < M2lenrow; j++) 
+        for (i = 0; i < M2lencolumn; i++) 
+            for (m = i; m < M2lencolumn; m++) 
+                if (M2[j][m] < M2[j][i]) {
+                    temp = M2[j][m];
+                    M2[j][m] = M2[j][i];
+                    M2[j][i] = temp;
                 }
+
+    for (i = 0; i < L1lenrow; i++)     // FOR ORDERING 
+        for (j = 0; j < L1lencolumn; j++) 
+            fscanf(fpr,"%d",&L1[i][j]);
+
+    for (i = 0; i < L2lenrow; i++) 
+        for (j = 0; j < L2lencolumn; j++) 
+            fscanf(fpr,"%d",&L2[i][j]);
+    for (i = 0; i < L1lenrow; i++) 
+        for (j = 0; j < L1lencolumn; j++) 
+            for (m = j; m < L1lencolumn; m++) 
+                if (L1[i][m] < L1[i][j]) {
+                    temp = L1[i][m];
+                    L1[i][m] =L1[i][j];
+                    L1[i][j] = temp;
+                }
+
+    for (i = 0; i < L2lenrow; i++) 
+        for (j = 0; j < L2lencolumn; j++) 
+            for (m = j; m < L2lencolumn; m++) 
+                if (L2[i][m] < L2[i][j]) {
+                    temp = L2[i][m];
+                    L2[i][m] = L2[i][j];
+                    L2[i][j] = temp;
+                }
+
+    
     fclose(fpr);
     // close file
+
     // OPEN FILE
     FILE *fpr1;
     fpr1=fopen("generatorC2.txt","r");
@@ -130,7 +177,7 @@ int main() {
     fclose(fpr1);
      // close file
 
-    ulen = krc; // ulen = 512
+    ulen = krc; // ulen = 3688
     u = (int *)malloc(ulen * sizeof(int));
     
     
@@ -139,7 +186,7 @@ int main() {
     codarraylen = n;
     codarray = (int *)malloc(codarraylen * sizeof(int));
     int **sym;         // present symbol ( 4bits to 1symbols)
-    int symrow = 256; // Na/4 transmitt how many symbols
+    int symrow = 1844; // Na/4 transmitt how many symbols
     int symcolumn = 4; //16QAM PRESENT 1symbol = 4bits
     sym = (int **)malloc(symrow * sizeof(int *));
     for (i = 0; i < symrow; i++)
@@ -149,7 +196,7 @@ int main() {
         s[i] = (double *)malloc(scolumn * sizeof(double));
     
     double **x_receive;
-    int xrow = 256;  // Na / 4 receive how many symbols (receiver)
+    int xrow = 1844;  // Na / 4 receive how many symbols (receiver)
     int xcolumn = 2; //1 symbol vector have 2 index
     x_receive = (double **)malloc(xrow * sizeof(double *));
     for (i = 0; i < xrow; i++)
@@ -166,7 +213,7 @@ int main() {
     recieve_codarray = (int *)malloc(codarraylen * sizeof(int));
 
 
-    double ebn0s = 4.5;//SNR
+    double ebn0s = 0.2;//SNR
     double ebn0;
     double sigma;
     //sigma = sqrt(5.0 / (pow(10, ebn0s / 10)));
@@ -176,28 +223,46 @@ int main() {
 
     // for CODE part
     // receive 100 error block
-    double *Lj;             // LLR; LENGTH = 1024
-    int Ljlen = n;          // LENGTH = 1024
+    double *Lj;             // LLR; LENGTH = 7376
+    int Ljlen = n;          // LENGTH = 7376
     Lj = (double *)malloc(Ljlen * sizeof(double));
-    double **qij = NULL;    // from down to top
-    int qijrow = dv;        // qijrow = dv = 3
-    int qijcolumn = n;      // qijcolumn = n = 1024
-    double **uij = NULL;    // from top to down
-    int uijrow = rc;        // uijrow = rc = 512
-    int uijcolumn = dc;     // uijcloumn = dc 3
+    double **qij1 = NULL;    // from down to top
+    int qij1row = dv1;        // qijrow = dv1 =3
+    int qij1column = n/2;      // qijcolumn = n = 7376/2
+    double **qij2 = NULL;    // from down to top
+    int qij2row = dv2;        // qijrow = dv = 6
+    int qij2column = n/2;      // qijcolumn = n = 7376/2
+    double **uij1 = NULL;    // from top to down
+    int uij1row = rc/2;        // uijrow = rc = 3688/2
+    int uij1column = dc1;     // uijcloumn = dc 12
+    double **uij2 = NULL;    // from top to down
+    int uij2row = rc/2;        // uijrow = rc = 3688/2
+    int uij2column = dc2;     // uijcloumn = dc 6
     
-    qijrow = dv;        // qijrow = dv = 3
-    qijcolumn = n;      // qijcolumn = n = 1024
-    qij = (double **)malloc(qijrow * sizeof(double *));
-    for (i = 0; i < qijrow; i++) qij[i] = (double *)malloc(qijcolumn * sizeof(double));    
-    uijrow = rc;        // uijrow = rc = 512
-    uijcolumn = dc;     // uijcolumn = dc = 6 
-    uij = (double **)malloc(uijrow * sizeof(double *));
-    for (i = 0; i < uijrow; i++) uij[i] = (double *)malloc(uijcolumn * sizeof(double));
+    qij1row = dv1;        // qijrow = dv = 3
+    qij1column = n/2;      // qijcolumn = n = 7376/2
+    qij1 = (double **)malloc(qij1row * sizeof(double *));
+    for (i = 0; i < qij1row; i++) qij1[i] = (double *)malloc(qij1column * sizeof(double));
+    qij2row = dv2;        // qijrow = dv = 3
+    qij2column = n/2;      // qijcolumn = n = 7376/2
+    qij2 = (double **)malloc(qij2row * sizeof(double *));
+    for (i = 0; i < qij2row; i++) qij2[i] = (double *)malloc(qij2column * sizeof(double));
+
+    uij1row = rc/2;        // uijrow = rc = 512
+    uij1column = dc1;     // uijcolumn = dc = 6 
+    uij1 = (double **)malloc(uij1row * sizeof(double *));
+    for (i = 0; i < uij1row; i++) uij1[i] = (double *)malloc(uij1column * sizeof(double));
+    uij2row = rc/2;        // uijrow = rc = 512
+    uij2column = dc1;     // uijcolumn = dc = 6 
+    uij2 = (double **)malloc(uij2row * sizeof(double *));
+    for (i = 0; i < uij2row; i++) uij2[i] = (double *)malloc(uij2column * sizeof(double));
+    
     int restart = 0;
-    double tempqij[5]; 
+    double tempqij1[11]; 
+    double tempqij2[5]; 
     double tempuij;
-    double temp1uij[3];
+    double temp1uij1[3];
+    double temp1uij2[6];
     double temp1qij; 
     int valL;
     int valL2;
@@ -225,10 +290,15 @@ int main() {
     int outputarray = n;
     outputarray = n;
     output = (int *)malloc( outputarray * sizeof(int) );
-    int error = 0;
-    int totalerror = 0;
-    double BER;
-    double FER;
+    int error1 = 0;
+    int totalerror1 = 0;
+    int error2 = 0;
+    int totalerror2 = 0;
+    double BER1;
+
+    double BER2;
+    double FER1;
+    double FER2;
 
     while (error_block < 100/*100*/) {
         for (i = 0; i < codarraylen; i++) codarray[i] = 0;
@@ -362,91 +432,224 @@ int main() {
         } // END FOR LLR
 
         // the interative decoding algotrithm
-        for (j = 0; j < qijcolumn; j++)                               // initialization
-            for (i = 0; i < qijrow; i++) qij[i][j] = Lj[j];
+        for (j = 0; j < qij1column; j++)                             // initialization
+            for (i = 0; i < qij1row; i++) qij1[i][j] = Lj[j];
+        for (j = 0; j < qij2column; j++)                             // initialization
+            for (i = 0; i < qij2row; i++) qij2[i][j] = Lj[3688 + j];
+
         // message passing, for predetermined threshold = 200
         for (k = 0; k < 200 && restart != rc; k++) {
             restart = 0;
             //printf("k = %d ",k);
             // bottom-up
-            for (i = 0; i < 5; i++) tempqij[i] = 0.0;
+            for (i = 0; i < 11; i++) tempqij1[i] = 0.0;
+            for (i = 0; i < 5; i++) tempqij2[i] = 0.0;
             for (i = 0; i < computlen; i++) comput[i] = 0;
             for (i = 0; i < rc; i++) {
-                for (j = 0; j < 6; j++) {
-                    for (m = 0; m < 5; m++) {
-                        if (m < j) {
-                            valL = L[i][m]-1;
-                            tempqij[m] = qij[comput[valL]][valL];
-                        } 
-                        else if (m >= j) {
-                            valL = L[i][m+1]-1;
-                            tempqij[m] = qij[comput[valL]][valL];
+                    if (i < (rc/2)) {
+                        for (j = 0; j < 12; j++) {
+                            for (m = 0; m < 11; m++) {
+                                if (m < j) {
+                                    valL = L1[i][m]-1;
+                                    if (valL < (n/2)) tempqij1[m] = qij1[comput[valL]][valL];
+                                    else tempqij1[m] = qij2[comput[valL]][valL - 3688];
+                                    //if (i == 0&& j==8)printf("valL = %d ; ", valL);
+                                } 
+                                else if (m >= j) {
+                                    valL = L1[i][m+1]-1;
+                                    if (valL < (n/2)) tempqij1[m] = qij1[comput[valL]][valL];
+                                    else tempqij1[m] = qij2[comput[valL]][valL - 3688];
+                                    //if (i == 0&& j==8)printf("valL = %d ; ", valL);
+                                }
+                            }
+                            tempuij = tempqij1[0];
+                            //if (i == 0&& j==8) printf("tempuij = %.8g; ",tempuij);
+                            for(m = 1; m < 11; m++) {
+                                tempuij = CHK(tempuij, tempqij1[m]);
+                                //if (i == 0&& j==8) printf("tempuij = %.8g; ",tempuij);
+                                //if (i == 0&& j==8&&m==10) printf("m=10,tempqij1[m]=%.8g\n ",tempqij1[m]);
+                            }
+                            uij1[i][j] = tempuij;
+                            //if (i == 0 && j==8) {
+                                //printf("uij1[%d][%d]= %.7g ;",i,j,uij1[i][j]);
+                                //for (m=0; m <11;m++)printf("tempqij1[%d] = %g; ",m,tempqij1[m]);
+                            //}
+                            //if (i == 1 && j == 8) printf("uij1[%d][%d] = %g;    ",i,j,uij1[i][j]);
+                        }
+                    } else {
+                        for (j = 0; j < 6; j++) {
+                            for (m = 0; m < 5; m++) {
+                                if (m < j) {
+                                    valL = L2[i-1844][m]-1;
+                                    if (valL < (n/2)) tempqij2[m] = qij1[comput[valL]][valL];
+                                    else tempqij2[m] = qij2[comput[valL]][valL-3688];
+                                } 
+                                else if (m >= j) {
+                                    valL = L2[i-1844][m+1]-1;
+                                    if (valL < (n/2)) tempqij2[m] = qij1[comput[valL]][valL];
+                                    else tempqij2[m] = qij2[comput[valL]][valL-3688];
+                                }
+                            }
+                            tempuij = tempqij2[0];
+                            for(m = 1; m < 5; m++) {
+                                tempuij = CHK(tempuij, tempqij2[m]);
+                            }
+                            uij2[i-1844][j] = tempuij;
                         }
                     }
-                    tempuij = tempqij[0];
-                    for(m = 1; m < 5; m++) tempuij = CHK(tempuij, tempqij[m]);
-                    uij[i][j] = tempuij;
+                    if (i < (rc/2)) {
+                        for (m = 0; m < 12; m++) {
+                            comput[L1[i][m] - 1] += 1;
+                        }
+                    } else {
+                        for (m = 0; m < 6; m++) {
+                            comput[L2[i-1844][m] - 1] += 1;
+                        }
+                    }
                 }
-                for (m = 0; m < 6; m++) comput[L[i][m] - 1] += 1;
-            }
 
-            //top-down
-            for(i = 0; i < 3; i++) temp1uij[i] = 0.0;
-            for (i = 0; i < comput1len; i++) comput1[i] = 0;
-            for (j = 0; j < n; j++) {
-                for (i = 0; i < 3; i++) {
-                    for (m = 0; m < 2; m++) {
-                        if (m < i) { 
-                            valL = M[j][m] - 1;
-                            temp1uij[m] = uij[valL][comput1[valL]]; 
-                        }else if (m >= i) {
-                            valL = M[j][m + 1] - 1;
-                            temp1uij[m] = uij[valL][comput1[valL]];
+                // top-down
+                for(i = 0; i < 3; i++) {
+                    temp1uij1[i] = 0.0;
+                }
+                for(i = 0; i < 6; i++) {
+                    temp1uij2[i] = 0.0;
+                }
+                for (i = 0; i < comput1len; i++) comput1[i] = 0;
+                for (j = 0; j < n; j++) {
+                    if (j < (n/2)) {
+                        for (i = 0; i < 3; i++) {
+                            for (m = 0; m < 2; m++) {
+                                if (m < i) { 
+                                    valL = M1[j][m] - 1;
+                                    if (valL < (rc/2)) temp1uij1[m] = uij1[valL][comput1[valL]];
+                                    else  temp1uij1[m] = uij2[valL-1844][comput1[valL]];
+                                }
+                                else if (m >= i) {
+                                    valL = M1[j][m + 1] - 1;
+                                    if (valL < (rc/2)) temp1uij1[m] = uij1[valL][comput1[valL]];
+                                    else  temp1uij1[m] = uij2[valL-1844][comput1[valL]];
+                                }
+                            }
+                            temp1uij1[2] = Lj[j];
+                            qij1[i][j] = temp1uij1[0] + temp1uij1[1] + temp1uij1[2];
+                            //if(/*comput1[valL] == 0&&*/(j == 901 || j == 1363 ||j == 1803 || j== 2664||j==3064||j==3423||j==4378||j==4872||j==5101||j==6315||j==6607||j==6929))printf("temp1uij1[0] = %g; temp1uij1[1] = %g; temp1uij1[2] = %g; \n",temp1uij1[0],temp1uij1[1],temp1uij1[2]);
+                            //if(/*comput1[valL] == 0&&*/(j == 901 || j == 1363 ||j == 1803 || j== 2664||j==3064||j==3423||j==4378||j==4872||j==5101||j==6315||j==6607||j==6929)) printf("qij1[%d][%d] = %g ;\n",i,j,qij1[i][j]);
+                        }
+                    } else {
+                        for (i = 0; i < 6; i++) {
+                            for (m = 0; m < 5; m++) {
+                                if (m < i) { 
+                                    valL = M2[j-3688][m] - 1;
+                                    if (valL < (rc/2)) temp1uij2[m] = uij1[valL][comput1[valL]]; 
+                                    else temp1uij2[m] = uij2[valL-1844][comput1[valL]]; 
+                                }
+                                else if (m >= i) {
+                                    valL = M2[j-3688][m + 1] - 1;
+                                    if (valL < (rc/2)) temp1uij2[m] = uij1[valL][comput1[valL]]; 
+                                    else temp1uij2[m] = uij2[valL-1844][comput1[valL]];
+                                }
+                            }
+                            temp1uij2[5] = Lj[j];
+                            qij2[i][j-3688] = temp1uij2[0] + temp1uij2[1] + temp1uij2[2] +temp1uij2[3]+temp1uij2[4]+temp1uij2[5];
+                            //if((j == 901 || j == 1363 ||j == 1803 || j== 2664||j==3064||j==3423||j==4378||j==4872||j==5101||j==6315||j==6607||j==6929))printf("temp1uij2[0] = %g; temp1uij2[1] = %g; temp1uij2[2] = %g; temp1uij2[3] = %g;temp1uij2[4] = %g;temp1uij2[5] = %g;\n",temp1uij2[0],temp1uij2[1],temp1uij2[2],temp1uij2[3],temp1uij2[4],temp1uij2[5]);
+                            //if((j == 901 || j == 1363 ||j == 1803 || j== 2664||j==3064||j==3423||j==4378||j==4872||j==5101||j==6315||j==6607||j==6929)) printf("qij2[%d][%d] = %g ;\n",i,j,qij2[i][j-3688]);
                         }
                     }
-                    temp1uij[2] = Lj[j];
-                    qij[i][j] = temp1uij[0] + temp1uij[1] + temp1uij[2];
+                    if (j < n/2) {
+                        for (m = 0; m < 3; m++) {
+                            comput1[M1[j][m] - 1] += 1;
+                        }
+                    } else {
+                        for (m =0; m < 6; m++) {
+                            comput1[M2[j-3688][m] - 1] += 1;
+                        }
+                    }
                 }
-                for (m = 0; m < 3; m++) comput1[M[j][m] - 1] += 1;
-            }
-            // decision
-            for (i = 0; i < comput2len; i++) comput2[i] = 0;
-            for (j = 0; j < n; j++) {
-                qj[j] = Lj[j];
-                for (i = 0; i < 3; i++) {
-                    valL = M[j][i] - 1;
-                    qj[j] += uij[valL][comput2[valL]];
+
+                // decision
+                for (i = 0; i < comput2len; i++) comput2[i] = 0;
+                for (j = 0; j < n; j++) {
+                    qj[j] = Lj[j];
+                    if (j < (n/2)) {
+                        for (i = 0; i < 3; i++) {
+                            valL = M1[j][i] - 1;
+                            if (valL < (rc/2)) qj[j] += uij1[valL][comput2[valL]];
+                            else qj[j] += uij2[valL-1844][comput2[valL]];
+                        }
+                        if (qj[j] >= 0) output[j] = 0;
+                        else if (qj[j] < 0) output[j] = 1;
+                        for (i = 0; i < 3; i++) {
+                            comput2[M1[j][i] - 1] += 1;
+                        }
+                    } else {
+                        for (i = 0; i < 6; i++) {
+                            valL = M2[j-3688][i] - 1;
+                            if (valL < (rc/2)) qj[j] += uij1[valL][comput2[valL]];
+                            else qj[j] += uij2[valL-1844][comput2[valL]];
+                            //qj[j] += uij2[valL][comput2[valL]];
+                        }
+                        if (qj[j] >= 0) output[j] = 0;
+                        else if (qj[j] < 0) output[j] = 1;
+                        for (i = 0; i < 6; i++) {
+                            comput2[M2[j-3688][i] - 1] += 1;
+                        }
+                    }
+                    //if (j ==0 || j == 515|| j==4789||j ==7000) printf("qj[%d] = %g\n",j,qj[j]);
                 }
-                if (qj[j] >= 0) output[j] = 0;
-                else if (qj[j] < 0) output[j] = 1;
-                for (i = 0; i < 3; i++) comput2[M[j][i] - 1] += 1;
-            }
-            // to check Hx=0     
-            for (i = 0; i < rc; i++) {
-                checkbit[i] = 0;
-                for (j = 0; j < 6; j++) checkbit[i] += output[L[i][j] - 1];
-                checkbit[i] = checkbit[i] % 2;
-            }
-            for (i = 0; i < rc; i++) if (checkbit[i] == 0) restart += 1; // restart = 512 is success
+
+                // to check Hx=0     
+                for (i = 0; i < rc; i++) {
+                    checkbit[i] = 0;
+                    if (i < (rc/2)) {
+                        for (j = 0; j < 12; j++) {
+                            checkbit[i] += output[L1[i][j] - 1];
+                        }
+                        checkbit[i] = checkbit[i] % 2;
+                    } else {
+                        for (j = 0; j < 6; j++) {
+                            checkbit[i] += output[L2[i-1844][j] - 1];
+                        }
+                        checkbit[i] = checkbit[i] % 2;
+                    }
+                }
+
+                for (i = 0; i < rc; i++) {
+                    if (checkbit[i] == 0) restart += 1; // restart = 408 is success
+                }
+                int restart1 = 0;
+                int restart2 = 0;
+                for (i = 0; i < rc/2; i++) {
+                    if (checkbit[i] == 0) restart1 += 1; // restart = 408 is success
+                }
+                for (i = rc/2; i < rc; i++) {
+                    if (checkbit[i] == 0) restart2 += 1; // restart = 408 is success
+                }
             //printf("restart =%d\n",restart);
         
         }// end for iteration
         printf("errorblock = %d num %d \n",error_block,num);
-        error = 0;
-        for(i = 0; i < n; i++) if (output[i] != codarray[i]) error += 1;
-        if (error != 0) {
+        error1 = 0;
+        error2 = 0;
+        for(i = 0; i < n/2; i++) if (output[i] != codarray[i]) error1 += 1;
+        for(i = n/2; i < n; i++) if (output[i] != codarray[i]) error2 += 1;
+        if (error1 != 0) {
             error_block++;
-            printf("error = %d \n",error);
+            printf("error1 = %d \n",error1);
         }
         restart = 0;
-        totalerror += error;
+        totalerror1 += error1;
+        totalerror2 += error2;
     }
-    BER = (double)totalerror/(num*n);
-    FER = (double)100.0/num;
-    printf("totalerror = %d, BER = %g, FER = %g\n",totalerror,BER,FER);
+    BER1 = (double)totalerror1/(num*n);
+    BER2 = (double)totalerror2/(num*n);
+    FER1 = (double)100.0/num;
+    //FER2 = (double)100.0/num;
+    printf("totalerror1 = %d, BER1 = %g, FER = %g\n",totalerror1,BER1,FER1);
+    printf("totalerror2 = %d, BER2 = %g, FER = %g\n",totalerror2,BER2,FER1);
     FILE *outfp1; 
-        outfp1 = fopen("QAM16_EEP.txt","a");
-        fprintf(outfp1,"SNR = %g ; BER = %g ;FER = %g\n", ebn0s, BER,FER);
+        outfp1 = fopen("QAM16_UEP_LEVEL1.txt","a");
+        fprintf(outfp1,"SNR = %g ; BER1 = %g ;BER2 = %g ; FER = %g\n", ebn0s, BER1,BER2,FER1);
     fclose(outfp1);
     return 0;
 }
